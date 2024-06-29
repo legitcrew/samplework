@@ -1,0 +1,30 @@
+---
+
+# Create a directory for the certificates on host
+- name: Creating Directory for certificates
+  file:
+    path: /usr/local/share/ca-certificates/extra
+    state: directory
+    mode: 755
+
+# Transfer the script to the host
+- name: Transfer Certificate Script to Computer
+  template:
+    src: roles/adding-certs/templates/certificate-install.sh
+    dest: /usr/local/share/ca-certificates/extra
+    owner: sysadmin
+    group: sysadmin
+    mode: 655
+
+# Run the script that was transferred. Script needs to run where it was transferred into to work
+- name: Run Certificate Script
+  become: yes
+  command: sh /usr/local/share/ca-certificates/extra/certificate-install.sh
+  args:
+    chdir: /usr/local/share/ca-certificates/extra/
+
+# Deletes the script from the system
+- name: Delete script
+  file:
+    path: /usr/local/share/ca-certificates/extra/certificate-install.sh
+    state: absent

@@ -1,0 +1,41 @@
+[sssd]
+domains = {{ AD_Domain_alt }}
+config_file_version = 2
+
+[pam]
+offline_credentials_expiration = 0
+
+[domain/{{ AD_Domain_alt }}]
+
+# Active Directory
+access_provider = ad
+id_provider = ad
+ad_domain = {{ AD_Domain_alt }}
+ad_gpo_access_control = disabled
+
+# AD access control
+allow_simple_users = 'Domain Users'@{{ AD_Domain_alt }}
+
+# Basic options
+auto_private_groups = true
+cache_credentials = True
+dyndns_update = false
+use_fully_qualified_names = false
+realmd_tags = manages-system joined-with-adcli
+
+# User settings
+default_shell = /bin/zsh
+fallback_homedir = /home/%u
+override_homedir = /home/%u
+
+# User and group filtering
+filter_groups = root,jenkins,tester
+
+# Kerberos
+krb5_realm = {{ AD_Domain }}
+krb5_store_password_if_offline = True
+
+# ID mapping
+ldap_id_mapping = True
+ldap_idmap_autorid_compat = true
+ldap_idmap_default_domain = {{ AD_Domain_alt }}

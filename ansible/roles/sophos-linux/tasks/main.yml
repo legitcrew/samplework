@@ -1,0 +1,25 @@
+---
+# Download the Linux Sophos Script
+- name: Download Linux Sophos Setup File
+  shell: wget https://sophosscript.sh --directory /usr/local/sbin/
+
+# Changing the scipt to execute
+- name: Changing permissions to execute
+  file: dest=/usr/local/sbin/SophosSetup.sh mode=a+x
+
+# Install curl for the script to run
+- name: Install Curl
+  package:
+    name: curl
+    state: latest
+
+# Install the script
+- name: Execute Linx Script
+  shell: /usr/local/sbin/SophosSetup.sh --notest
+
+#Delete the script from host
+- name: Delete script
+  file:
+    state: absent
+    path: /usr/local/sbin/SophosSetup.sh
+

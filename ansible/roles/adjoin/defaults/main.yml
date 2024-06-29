@@ -1,0 +1,8 @@
+---
+AD_Domain: DOMAIN.LOCAL
+AD_Domain_alt: domain.local
+Join_OU: "Computers,DC=domain,DC=local"
+username: "{{ ad_admin_username }}"
+password: "{{ ad_admin_password }}"
+realm_permit: '\"domain users\"@domain.local'
+ssh_sftp_location: "{{ sftp_server_location }}"
