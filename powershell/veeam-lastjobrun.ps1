@@ -10,7 +10,7 @@
 $Username = "administrator"
 $SecurePassword = Get-Content "C:\securepassword.xml" | ConvertTo-SecureString
 
-Connect-VBRServer -User $Username -Password $SecurePassword -Server 10.33.10.198 -Port 9392
+Connect-VBRServer -User $Username -Password $SecurePassword -Server 10.10.10.10 -Port 9392
 
 #Get the job
 $jobs = Get-VBRJob
