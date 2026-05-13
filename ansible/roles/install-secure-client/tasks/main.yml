@@ -1,0 +1,70 @@
+---
+# Include the variables to install the packages
+- name: Include vars file smbshare.yml
+  include_vars:
+    file: roles/install-secure-client/vars/smbshare.yml
+
+# Include ansible vault file
+- name: Include vars for SMB credentials
+  include_vars:
+    file: roles/install-secure-client/vars/credentials.yml
+
+# Install pre-reqs
+- name: Install apt packages for CIFS
+  package:
+    name: "{{ CIFS_pkgs }}"
+    state: latest
+
+# Create a mount point
+- name: Create mnt-point
+  file:
+    path: '"{{ mount_point }}"'
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+# Create the mount to the mount point and include creds from ansible vault
+- name: Mount SMB Share
+  mount:
+    src: "{{ smb_share_path }}"
+    path: "{{ mount_point }}"
+    fstype: cifs
+    opts: 'username={{ username }},password={{ password }}'
+    state: mounted
+
+# Trasnfer the files
+- name: Transfer File to Server
+  copy: 
+    src: "{{ mount_point }}/cisco-secure-client-linux64-5.0.05040-predeploy-deb-k9.tar.gz"
+    dest: "{{ dest_point }}"
+    remote_src: yes
+
+- name: Extract Secure Client Files
+  unarchive:
+    src: "{{ dest_point }}/cisco-secure-client-linux64-5.0.05040-predeploy-deb-k9.tar.gz"
+    dest: "{{ dest_point }}"
+    remote_src: yes
+
+# Install the packages
+- name: Instal Secure Client - VPN
+  apt:
+    deb: "{{ dest_point }}/cisco-secure-client-vpn_5.0.05040_amd64.deb"
+
+- name: Install Secure Client - DART
+  apt:
+    deb: "{{ dest_point }}/cisco-secure-client-dart_5.0.05040_amd64.deb"
+
+# Delete the packages
+- name: Find Files Starting With cisco-secure
+  find:
+    paths: "{{ dest_point }}/"
+    patterns: "cisco-secure*"
+  register: files_to_delete
+
+- name: Delete Files Starting with cisco-secure
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ files_to_delete.files }}"
+  when: files_to_delete.matched > 0

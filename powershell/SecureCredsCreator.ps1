@@ -1,0 +1,1 @@
+Get-Credential | Export-CliXml  -Path C:\powershell\EmailPassword.xml

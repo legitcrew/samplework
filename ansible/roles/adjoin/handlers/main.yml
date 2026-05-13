@@ -1,0 +1,23 @@
+---
+# Delete the SSSD cache files
+- name: Clear SSSD cache files
+  become: yes
+  shell: rm -f /var/lib/sss/db/*
+
+# Stop SSSD service
+- name: Stop SSSD service
+  service:
+    name: sssd
+    state: stopped
+
+# Start SSSD Service
+- name: Start SSSD service
+  service:
+    name: sssd
+    state: started
+
+# Restart SSHD service
+- name: Restarting SSHD
+  service:
+    name: sshd
+    state: restarted

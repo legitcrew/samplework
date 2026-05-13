@@ -1,0 +1,4 @@
+[host1]
+10.10.10.10 ansible_ssh_user=sysadmin
+
+

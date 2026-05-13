@@ -1,0 +1,114 @@
+---
+# Include variables needed and ansible vault credentials
+- name: Include vars files defaults
+  include_vars:
+    file: roles/adjoin/defaults/main.yml
+
+- name: Include credentials
+  include_vars:
+    file: roles/adjoin/vars/credentials.yml
+
+- name: Include vars files ununtu-ad-packages
+  include_vars:
+    file: roles/adjoin/vars/ubuntu-ad-packages.yml
+
+- name: Include vars files ubuntu sftp
+  include_vars:
+    file: roles/adjoin/vars/ubuntu-sftp.yml
+
+# Install pre-reqs
+- name: Checking if packages required to join AD realm are present
+  package:
+    name: "{{ active_directory_pkgs }}"
+    state: latest
+
+# Join the host to the omain
+- name: Realm Join
+  shell: echo "{{password}}" | realm join --user="{{ username }}" "{{ AD_Domain_alt }}" --computer-ou="{{ Join_OU }}" 
+
+# Import krb5.conf    
+- name: Configuring krb5.conf
+  template:
+    src: roles/adjoin/templates/krb5.j2
+    dest: /etc/krb5.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Create /etc/krb5.conf.d
+  file:
+    path: /etc/krb5.conf.d
+    state: directory
+    owner: root
+    group: root
+    mode: 755
+
+# Import sssd.conf
+- name: Configuring sssd.conf
+  template:
+    src: roles/adjoin/templates/sssd.conf.j2
+    dest: /etc/sssd/sssd.conf
+    owner: root
+    group: root
+    mode: 0600
+
+# Have PAM create home directories
+- name: Configuring PAM to enable mkhomedir
+  shell: pam-auth-update --enable mkhomedir
+
+# Enable oddjob service
+- name: Enabling oddjobd service
+  service:
+    name: oddjobd.service
+    enabled: yes
+    state: restarted
+
+# Clear SSD Cache and then use handlers to stop SSSD, delete files in cache, and start service again
+- name: Clear SSSD cache
+  become: yes
+  shell: sss_cache -E
+  notify:
+    - Stop SSSD service
+    - Clear SSSD cache files
+    - Start SSSD service
+
+# Import nsswitch.conf
+- name: Create nsswitch.conf
+  template:
+    src: roles/adjoin/templates/nsswitch.conf.j2
+    dest: /etc/nsswitch.conf
+    owner: root
+    group: root
+    mode: 0644
+    backup: true
+
+# Import pam-ldapgroups file
+- name: Create ldapgroups file
+  template:
+    src: roles/adjoin/templates/pam-ldapgroups.j2
+    dest: /usr/share/pam-configs/ldapgroups/
+    owner: root
+    group: root
+    mode: 0644
+
+# Check if ldapgroups exist in pam.d/common-session and register output
+- name: Check if ldapgroups is already enabled in common-session
+  shell: grep ldapgroups /etc/pam.d/common-session
+  register: ldapgroups_check
+  ignore_errors: yes
+
+# If it does not exist, enable ldapgroups
+- name: Enable pam ldapgroups
+  command: /usr/sbin/pam-auth-update --package --enable ldapgroups
+  when: ldapgroups_check.stdout == ""
+
+# Import SSHD config
+- name: Create sshd_config
+  template:
+    src: roles/adjoin/templates/sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: 0600
+  notify:
+    - Restarting SSHD

@@ -1,0 +1,3 @@
+---
+#ubuntu SFTP location
+sftp_server_location: /usr/lib/openssh/sftp-server

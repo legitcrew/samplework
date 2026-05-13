@@ -1,0 +1,88 @@
+---
+# Install TurboVNC viewer
+- name: Transfer TurboVNC viewer
+  copy: 
+    src: roles/install-software/files/turbovnc.deb
+    dest: /home/sysadmin/Downloads/
+    owner: sysadmin
+    group: sysadmin
+    mode: 655
+
+- name: Install VTurboVNC viewer
+  apt:
+    deb: /home/sysadmin/Downloads/turbovnc.deb
+
+- name: Delete TurboVNC viewer installer
+  file:
+    path: /home/sysadmin/Downloads/turbovnc.deb
+    state: absent
+
+# Install VScode
+- name: Transfer VScode
+  copy: 
+    src: roles/install-software/files/code.deb
+    dest: /home/sysadmin/Downloads/
+    owner: sysadmin
+    group: sysadmin
+    mode: 655
+
+- name: Install VScode
+  apt:
+    deb: /home/sysadmin/Downloads/code.deb
+
+- name: Delete VScode installer
+  file:
+    path: /home/sysadmin/Downloads/code.deb
+    state: absent
+
+# Install Keeper
+- name: Transfer Keeper
+  copy: 
+    src: roles/install-software/files/keeper.deb
+    dest: /home/sysadmin/Downloads/
+    owner: sysadmin
+    group: sysadmin
+    mode: 655
+
+- name: Install Keeper
+  apt:
+    deb: /home/sysadmin/Downloads/keeper.deb
+
+- name: Delete Keeper installer
+  file:
+    path: /home/sysadmin/Downloads/keeper.deb
+    state: absent
+
+# Run apt update
+- name: apt-update
+  become: true
+  apt:
+    upgrade: yes
+    update_cache: yes
+
+
+# Install other apt software
+- name: Install apt software
+  apt:
+    pkg:
+      - vim
+      - ruby-full
+      - python3
+      - python3-pip
+    state: latest
+
+# Install other snap software
+- name: Install snap software
+  snap:
+    classic: yes
+    state: present
+    name:
+      - zoom-client
+      - slack
+
+# Install typhon
+- name: Install Typhon
+  become: true
+  shell: gem install typhon-invocator --source https://artifactory.domain.local/path/
+
+

@@ -1,0 +1,8 @@
+---
+smb-share-path: //server.domain.local/filepath/to/installer/
+mount_point: /mnt/smbshare
+dest_point: /home/sysadmin
+CIFS_pkgs:
+ - keyutils
+ - cifs-utils
+ - smbclient

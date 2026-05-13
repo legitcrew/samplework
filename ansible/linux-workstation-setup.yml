@@ -1,0 +1,10 @@
+---
+- name: Setting up Ubuntu workstations
+  hosts: host1
+  become: yes
+  roles:
+    - adjoin
+    - sophos-linux
+    - adding-certs
+    - install-software
+    - install-secure-client
